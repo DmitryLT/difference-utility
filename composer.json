@@ -18,14 +18,17 @@
             "Docopt\\": "vendor/docopt/docopt/src/"
           },
           "files": [
-              "src/options.php"
+              "src/options.php",
+              "src/Run.php"
           ]
     },
     "require": {
-        "docopt/docopt": "^1.0"
+        "docopt/docopt": "^1.0",
+        "funct/funct": "^1.5"
     },
     "require-dev": {
-        "squizlabs/php_codesniffer": "3.*"
+        "squizlabs/php_codesniffer": "3.*",
+        "phpunit/phpunit": "^8"
     },
     "bin": [
         "bin/gendiff"
