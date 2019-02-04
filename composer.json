@@ -1,11 +1,32 @@
 {
     "name": "taggart/generate-differences",
     "type": "project",
+    "description": "Utility for finding differences in two files",
     "authors": [
         {
             "name": "DmitryLT",
             "email": "dim.sha@yandex.ru"
         }
     ],
-    "require": {}
+    "scripts": {
+        "phpcs": "phpcs"
+    },
+    "autoload": {
+        "psr-4": {
+            "Generate\\Differences\\": "src/",
+            "Docopt\\": "vendor/docopt/docopt/src/"
+          },
+          "files": [
+              "src/options.php"
+          ]
+    },
+    "require": {
+        "docopt/docopt": "^1.0"
+    },
+    "require-dev": {
+        "squizlabs/php_codesniffer": "3.*"
+    },
+    "bin": [
+        "bin/gendiffs"
+    ]
 }
