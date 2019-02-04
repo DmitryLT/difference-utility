@@ -27,6 +27,6 @@
         "squizlabs/php_codesniffer": "3.*"
     },
     "bin": [
-        "bin/gendiffs"
+        "bin/gendiff"
     ]
 }
