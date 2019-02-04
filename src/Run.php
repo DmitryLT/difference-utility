@@ -21,7 +21,6 @@ DOC;
 function run()
 {
     $response = Docopt::handle(OPTIONS);
-    // $response = showOptions();
 
     $firstFile = $response->args["<firstFile>"];
     $secondFile = $response->args["<secondFile>"];
