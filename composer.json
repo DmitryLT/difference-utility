@@ -1,0 +1,11 @@
+{
+    "name": "taggart/generate-differences",
+    "type": "project",
+    "authors": [
+        {
+            "name": "DmitryLT",
+            "email": "dim.sha@yandex.ru"
+        }
+    ],
+    "require": {}
+}
