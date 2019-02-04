@@ -2,9 +2,29 @@
 
 namespace Generate\Differences\Run;
 use function Generate\Differences\Options\showOptions;
-// use Docopt;
+use function Generate\Differences\GetDiff\getDiff;
+use Docopt;
+
+const OPTIONS = <<<DOC
+Generate diff
+
+Usage:
+    gendiff (-h|--help)
+    gendiff [--format <fmt>] <firstFile> <secondFile>
+
+Options:
+    -h --help           Show this screen
+    --format <fmt>      Report format [default: pretty]
+
+DOC;
 
 function run()
 {
-    showOptions();
+    $response = Docopt::handle(OPTIONS);
+    // $response = showOptions();
+
+    $firstFile = $response->args["<firstFile>"];
+    $secondFile = $response->args["<secondFile>"];
+
+    echo getDiff($firstFile, $secondFile);
 }

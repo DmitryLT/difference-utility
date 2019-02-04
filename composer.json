@@ -18,8 +18,8 @@
             "Docopt\\": "vendor/docopt/docopt/src/"
           },
           "files": [
-              "src/options.php",
-              "src/Run.php"
+              "src/Run.php",
+              "src/getDiff.php"
           ]
     },
     "require": {
