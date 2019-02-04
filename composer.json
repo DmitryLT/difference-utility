@@ -2,6 +2,7 @@
     "name": "taggart/generate-differences",
     "type": "project",
     "description": "Utility for finding differences in two files",
+    "keywords": ["diff", "show diffs", "cli"],
     "authors": [
         {
             "name": "DmitryLT",
