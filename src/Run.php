@@ -7,6 +7,4 @@ use function Generate\Differences\Options\showOptions;
 function run()
 {
     showOptions();
-
-    
 }
