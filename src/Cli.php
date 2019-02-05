@@ -1,7 +1,7 @@
 <?php
 
-namespace Differ\Run;
-use function Differ\GetDiff\getDiff;
+namespace GenerateDifferences\Cli;
+use function GenerateDifferences\GetDiff\getDiff;
 use Docopt;
 
 const OPTIONS = <<<DOC

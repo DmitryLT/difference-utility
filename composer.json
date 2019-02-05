@@ -14,11 +14,11 @@
     },
     "autoload": {
         "psr-4": {
-            "Differ\\": "src/",
+            "GenerateDifferences\\": "src/",
             "Docopt\\": "vendor/docopt/docopt/src/"
           },
           "files": [
-              "src/Run.php",
+              "src/Cli.php",
               "src/getDiff.php"
           ]
     },
