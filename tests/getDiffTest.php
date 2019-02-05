@@ -10,7 +10,7 @@ class GetDiffTest extends TestCase
     public function testgetDiff()
     {
         $expected = file_get_contents(__DIR__ . "/examples/expectedJson.txt");
-        $actual = getDiff(__DIR__ . "/examples/before.json", __DIR__ . "/examples/after.json");
+        $actual = trim(getDiff(__DIR__ . "/examples/before.json", __DIR__ . "/examples/after.json"));
         $this->assertEquals($expected, $actual);
     }
 }
