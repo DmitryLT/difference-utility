@@ -1,9 +1,9 @@
 <?php
 
+namespace GenerateDifferences\Tests;
 use PHPUnit\Framework\TestCase;
 use function \GenerateDifferences\GetDiff\getDiff;
 use function \Funct\Strings\strip;
-require_once __DIR__ . "/../src/getDiff.php";
 
 class GetDiffTest extends TestCase
 {
