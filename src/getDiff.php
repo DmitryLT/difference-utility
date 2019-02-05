@@ -1,6 +1,6 @@
 <?php
 
-namespace Generate\Differences\GetDiff;
+namespace Differ\GetDiff;
 use Docopt;
 
 function getDiff($pathToFile1, $pathToFile2)
