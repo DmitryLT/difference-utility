@@ -8,7 +8,7 @@ function parse($data)
 {
     if (pathinfo($data, PATHINFO_EXTENSION) == "json") {
         return json_decode(file_get_contents($data), true);
-    } elseif (pathinfo($data, PATHINFO_EXTENSION) == "yaml") {
+    } elseif (pathinfo($data, PATHINFO_EXTENSION) == "yml") {
         return Yaml::parse(file_get_contents($data));
     }
 }
