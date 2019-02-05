@@ -3,12 +3,12 @@
 namespace GenerateDifferences\Parser;
 use Symphony\Component\Yaml;
 
-function parse($data, $extension = "json")
+function parse($data)
 {
-    if ($extension == "json") {
-        return json_decode($data, true);
-    } elseif ($extension == "yaml") {
-        return Yaml::parse($data);
+    if (pathinfo($data, PATHINFO_EXTENSION) == "json") {
+        return json_decode(file_get_contents($data), true);
+    } elseif (pathinfo($data, PATHINFO_EXTENSION) == "yaml") {
+        return Yaml::parse(file_get_contents($data));
     }
 }
 
