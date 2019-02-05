@@ -4,4 +4,4 @@
 
 * 1st step: https://asciinema.org/a/xu98J9goTl5fFGKgAWmjOuQp9
 
-* 2nd step: https://asciinema.org/a/WRSzEsBTlQ5msVPlC1olK6dUR
+* 2nd step: https://asciinema.org/a/9pyUfobtpJvw6il4l7Y5nfnvO
