@@ -1,43 +1,24 @@
 <?php
 
 namespace GenerateDifferences\GetDiff;
+use function GenerateDifferences\Parser\parse;
+use function GenerateDifferences\Parser\findDiffs;
 
-function getDiff($pathToFile1, $pathToFile2)
+function getDiff($pathToFile1, $pathToFile2, $format = "json")
 {
     if (file_exists($pathToFile1) && file_exists($pathToFile2)) {
         $stringFile1 = file_get_contents($pathToFile1);
         $stringFile2 = file_get_contents($pathToFile2);
     }
 
-    $arr1 = json_decode($stringFile1, true);
-    $arr2 = json_decode($stringFile2, true);
+    $parsedContent1 = parse($stringFile1);
+    $parsedContent2 = parse($stringFile2);
 
-    $result = [];
-
-    foreach ($arr1 as $key => $value) {
-        if (in_array($key, array_keys($arr2)) && in_array($key, array_keys($arr1))) {
-            if ($arr1[$key] == $arr2[$key]) {
-                $result["   {$key}"] = $value;
-            } elseif ($arr1[$key] != $arr2[$key]) {
-                $result["- {$key}"] = $value;
-                $result["+ {$key}"] = $arr2[$key];
-            }
-        }
+    $result = findDiffs($parsedContent1, $parsedContent2);
+    if ($format == "json") {
+        $string = json_encode($result, JSON_PRETTY_PRINT) . "\n";
     }
-    foreach ($arr1 as $key => $value) {
-        if (!in_array($key, array_keys($arr2))) {
-            $result["- {$key}"] = $value;
-        }
-    }
-    foreach ($arr2 as $key => $value) {
-        if (!in_array($key, array_keys($arr1))) {
-            $result["+ {$key}"] = $value;
-        }
-    }
-
-    $string = json_encode($result, JSON_PRETTY_PRINT) . "\n";
     $stringResult = implode("", explode('"', $string));
-    $stringResult = implode(" ", explode('  ', $stringResult));
 
-    return $stringResult;
+    return implode(" ", explode('  ', $stringResult));
 }
