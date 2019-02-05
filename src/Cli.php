@@ -25,4 +25,5 @@ function run()
     $secondFile = $response->args["<secondFile>"];
 
     echo getDiff($firstFile, $secondFile);
+    // getDiff($firstFile, $secondFile);
 }

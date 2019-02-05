@@ -4,6 +4,8 @@ namespace GenerateDifferences\Parser;
 use Symfony\Component\Yaml\Yaml;
 use function Funct\Collection\flattenAll;
 
+const LAST_COMMA = -2;
+
 function parse($data)
 {
     if (pathinfo($data, PATHINFO_EXTENSION) == "json") {
@@ -19,7 +21,7 @@ function findDiffs($arr1, $arr2)
     foreach ($arr1 as $key => $value) {
         if (in_array($key, array_keys($arr2)) && in_array($key, array_keys($arr1))) {
             if ($arr1[$key] == $arr2[$key]) {
-                $accummulator["   {$key}"] = $value;
+                $accummulator["  {$key}"] = $value;
             } elseif ($arr1[$key] != $arr2[$key]) {
                 $accummulator["- {$key}"] = $value;
                 $accummulator["+ {$key}"] = $arr2[$key];
@@ -43,4 +45,18 @@ function findDiffs($arr1, $arr2)
         $result[$keys[$i]] = $values[$i];
     }
     return $result;
+}
+
+function stringifyResult($result)
+{
+    $string = "{\n";
+    foreach ($result as $key => $value) {
+        if (is_bool($value)) {
+            $value = $value == true ? 'true' : 'false';
+        }
+        $string = "{$string}  {$key}: {$value},\n";
+    }
+    $noLastComma = substr($string, 0, LAST_COMMA);
+    $finalString = "{$noLastComma}\n}\n";
+    return $finalString;
 }
