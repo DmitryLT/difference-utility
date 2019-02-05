@@ -11,8 +11,8 @@ class GetDiffTest extends TestCase
     {
         $expected = file_get_contents(__DIR__ . "/examples/expectedJson.txt");
         $actual1 = trim(getDiff(__DIR__ . "/examples/before.json", __DIR__ . "/examples/after.json"));
-        $actual2 = trim(getDiff(__DIR__ . "/examples/before.yaml", __DIR__ . "/examples/after.yaml"));
-        
+        $actual2 = trim(getDiff(__DIR__ . "/examples/before.yml", __DIR__ . "/examples/after.yml"));
+
         $this->assertEquals($expected, $actual1);
         $this->assertEquals($expected, $actual2);
     }
