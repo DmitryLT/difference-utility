@@ -1,21 +1,16 @@
 <?php
 
-// use function Generate\Differences\GetDiff\getDiff;
+use PHPUnit\Framework\TestCase;
+use function \GenerateDifferences\GetDiff\getDiff;
+use function \Funct\Strings\strip;
+require_once __DIR__ . "/../src/getDiff.php";
 
-require_once "/../getDiff.php";
-
-class GetDiffTest extends \PHPUnit_Framework_TestCase
+class GetDiffTest extends TestCase
 {
     public function testgetDiff()
     {
-        $expected = "{
-            host: hexlet.io
-          + timeout: 20
-          - timeout: 50
-          - proxy: 123.234.53.22
-          + verbose: true
-        }";
-        $actual = getDiff();
+        $expected = file_get_contents(__DIR__ . "/examples/expectedJson.txt");
+        $actual = getDiff(__DIR__ . "/examples/before.json", __DIR__ . "/examples/after.json");
         $this->assertEquals($expected, $actual);
     }
 }

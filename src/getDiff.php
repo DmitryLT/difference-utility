@@ -1,6 +1,7 @@
 <?php
 
 namespace GenerateDifferences\GetDiff;
+use function \Funct\Strings\strip;
 use Docopt;
 
 function getDiff($pathToFile1, $pathToFile2)
@@ -36,5 +37,8 @@ function getDiff($pathToFile1, $pathToFile2)
         }
     }
 
-    return json_encode($result, JSON_PRETTY_PRINT) . "\n";
+    $string = json_encode($result, JSON_PRETTY_PRINT) . "\n";
+    $stringResult = \Funct\Strings\strip($string, '"');
+
+    return $stringResult;
 }
