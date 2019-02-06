@@ -1,5 +1,5 @@
 {
-    "name": "taggart/generate-differences",
+    "name": "taggart/differ",
     "type": "library",
     "description": "Utility for finding differences in two files",
     "keywords": ["diff", "show diffs", "cli"],
@@ -16,8 +16,8 @@
     },
     "autoload": {
         "psr-4": {
-            "GenerateDifferences\\": "src/",
-            "GenerateDifferences\\Tests\\": "tests/",
+            "Differ\\": "src/",
+            "Differ\\Tests\\": "tests/",
             "Docopt\\": "vendor/docopt/docopt/src/"
           },
           "files": [

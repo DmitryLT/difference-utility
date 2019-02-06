@@ -1,9 +1,9 @@
 <?php
 
-namespace GenerateDifferences\GetDiff;
-use function GenerateDifferences\Parser\parse;
-use function GenerateDifferences\Parser\findDiffs;
-use function GenerateDifferences\Parser\stringifyResult;
+namespace Differ\Parser;
+use function Differ\Parser\parse;
+use function Differ\Parser\findDiffs;
+use function Differ\Parser\stringifyResult;
 
 function getDiff($pathToFile1, $pathToFile2)
 {

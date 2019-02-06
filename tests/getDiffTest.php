@@ -1,8 +1,8 @@
 <?php
 
-namespace GenerateDifferences\Tests;
+namespace Differ\Tests;
 use PHPUnit\Framework\TestCase;
-use function \GenerateDifferences\GetDiff\getDiff;
+use function \Differ\Parser\getDiff;
 use function \Funct\Strings\strip;
 
 class GetDiffTest extends TestCase

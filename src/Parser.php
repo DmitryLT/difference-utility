@@ -1,6 +1,6 @@
 <?php
 
-namespace GenerateDifferences\Parser;
+namespace Differ\Parser;
 use Symfony\Component\Yaml\Yaml;
 use function Funct\Collection\flattenAll;
 
