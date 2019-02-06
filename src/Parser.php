@@ -2,61 +2,62 @@
 
 namespace Differ\Parser;
 use Symfony\Component\Yaml\Yaml;
-use function Funct\Collection\flattenAll;
 
 const LAST_COMMA = -2;
+const FIRST_INDENTATION = 0;
 
-function parse($data)
+function parse($data, $extension)
 {
-    if (pathinfo($data, PATHINFO_EXTENSION) == "json") {
-        return json_decode(file_get_contents($data), true);
-    } elseif (pathinfo($data, PATHINFO_EXTENSION) == "yml") {
-        return Yaml::parse(file_get_contents($data));
+    if ($extension == "json") {
+        return json_decode($data, true);
+    } elseif ($extension == "yml") {
+        $data = Yaml::parse($data);
+        return standartizeYamlToJson($data);
     }
 }
 
-function findDiffs($arr1, $arr2)
+function getExtension($pathToFile)
 {
-    $diffs = array_reduce($arr1, function ($acc, $item) use ($arr1, $arr2) {
-        foreach ($arr1 as $key => $value) {
-            if (in_array($key, array_keys($arr2)) && in_array($key, array_keys($arr1))) {
-                if ($arr1[$key] == $arr2[$key]) {
-                    $acc["  {$key}"] = $value;
-                } elseif ($arr1[$key] != $arr2[$key]) {
-                    $acc["- {$key}"] = $value;
-                    $acc["+ {$key}"] = $arr2[$key];
-                }
-            }
+    return pathinfo($pathToFile, PATHINFO_EXTENSION);
+}
+
+function findDiffs($before, $after)
+{
+    $differences = [];
+    foreach ($before as $key => $value) {
+        if (array_key_exists($key, $after) && $before[$key] == $after[$key]) {
+            array_push($differences, ['key' => $key, 'value' => $before[$key], 'change' => ' ']);
+        } elseif (array_key_exists($key, $after) && $before[$key] != $after[$key]) {
+            array_push($differences, ['key' => $key, 'value' => $before[$key], 'change' => '-']);
+            array_push($differences, ['key' => $key, 'value' => $after[$key], 'change' => '+']);
+        } elseif (!array_key_exists($key, $after)) {
+            array_push($differences, ['key' => $key, 'value' => $before[$key], 'change' => '-']);
         }
-        foreach ($arr1 as $key => $value) {
-            if (!in_array($key, array_keys($arr2))) {
-                $acc["- {$key}"] = $value;
-            }
-        }
-        foreach ($arr2 as $key => $value) {
-            if (!in_array($key, array_keys($arr1))) {
-                $acc["+ {$key}"] = $value;
-            }
-        }
-        return $acc;
-    }, []);
-    $keys = array_keys($diffs);
-    $values = flattenAll($diffs);
-    $result = [];
-    for ($i = 0; $i < count($keys); $i++) {
-        $result[$keys[$i]] = $values[$i];
     }
-    return $result;
+    foreach ($after as $key => $value) {
+        if (!array_key_exists($key, $before)) {
+            array_push($differences, ['key' => $key, 'value' => $after[$key], 'change' => '+']);
+        }
+    }
+    return $differences;
+}
+
+function standartizeYamlToJson($data)
+{
+    foreach ($data as $key => $value) {
+        $data[$key] = $value[FIRST_INDENTATION];
+    }
+    return $data;
 }
 
 function stringifyResult($result)
 {
     $string = "{\n";
     foreach ($result as $key => $value) {
-        if (is_bool($value)) {
-            $value = $value == true ? 'true' : 'false';
+        if (is_bool($value['value'])) {
+            $value['value'] = $value['value'] == true ? 'true' : 'false';
         }
-        $string = "{$string}  {$key}: {$value},\n";
+        $string = $string . "  " . $value['change'] . " " . $value['key'] . ": " . $value['value'] . ",\n";
     }
     $noLastComma = substr($string, 0, LAST_COMMA);
     $finalString = "{$noLastComma}\n}\n";

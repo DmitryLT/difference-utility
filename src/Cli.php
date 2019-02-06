@@ -21,9 +21,8 @@ function run()
 {
     $response = Docopt::handle(OPTIONS);
 
-    $firstFile = $response->args["<firstFile>"];
-    $secondFile = $response->args["<secondFile>"];
+    $fileBefore = $response->args["<firstFile>"];
+    $fileAfter = $response->args["<secondFile>"];
 
-    echo getDiff($firstFile, $secondFile);
-    // getDiff($firstFile, $secondFile);
+    echo getDiff($fileBefore, $fileAfter);
 }
