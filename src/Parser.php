@@ -2,64 +2,77 @@
 
 namespace Differ\Parser;
 use Symfony\Component\Yaml\Yaml;
+use function \Funct\Collection\union;
 
 const LAST_COMMA = -2;
 const FIRST_INDENTATION = 0;
 
-function parse($data, $extension)
+function parse($data, $type)
 {
-    if ($extension == "json") {
+    if ($type == "json") {
         return json_decode($data, true);
-    } elseif ($extension == "yml") {
-        $data = Yaml::parse($data);
-        return standartizeYamlToJson($data);
+    } elseif ($type == "yml") {
+        return standartizeYamlToJson(Yaml::parse($data));
     }
 }
 
-function getExtension($pathToFile)
+function getType($pathToFile)
 {
     return pathinfo($pathToFile, PATHINFO_EXTENSION);
 }
 
 function findDiffs($before, $after)
 {
-    $differences = [];
-    foreach ($before as $key => $value) {
-        if (array_key_exists($key, $after) && $before[$key] == $after[$key]) {
-            array_push($differences, ['key' => $key, 'value' => $before[$key], 'change' => ' ']);
-        } elseif (array_key_exists($key, $after) && $before[$key] != $after[$key]) {
-            array_push($differences, ['key' => $key, 'value' => $before[$key], 'change' => '-']);
-            array_push($differences, ['key' => $key, 'value' => $after[$key], 'change' => '+']);
+    $statuses = findFlags($before, $after);
+    $reduced = array_reduce($statuses, function ($acc, $status) use ($before, $after) {
+        if (array_key_exists($status['key'], $before)) {
+            if (is_bool($before[$status['key']])) {
+                $before[$status['key']] = $before[$status['key']] == true ? 'true' : 'false';
+            }
+        }
+        if (array_key_exists($status['key'], $after)) {
+            if (is_bool($after[$status['key']])) {
+                $after[$status['key']] = $after[$status['key']] == true ? 'true' : 'false';
+            }
+        }
+        if ($status['flag'] == "same") {
+            $string = "  " . "  " . $status['key'] . ": " . $before[$status['key']] . "\n";
+        } elseif ($status['flag'] == "change") {
+            $string = "  " . "- " . $status['key'] . ": " . $before[$status['key']] . "\n" .
+                      "  " . "+ " . $status['key'] . ": " . $after[$status['key']] . "\n";
+        } elseif ($status['flag'] == "deleted") {
+            $string = "  " . "- " . $status['key'] . ": " . $before[$status['key']] . "\n";
+        } elseif ($status['flag'] == "added") {
+            $string = "  " . "+ " . $status['key'] . ": " . $after[$status['key']] . "\n";
+        }
+            return $acc . $string;
+    }, "");
+    return "{\n" . $reduced . "}\n";
+}
+
+function findFlags($before, $after)
+{
+    $keys = union(array_keys($before), array_keys($after));
+    $statuses = array_map(function ($key) use ($before, $after) {
+        if (array_key_exists($key, $before) && array_key_exists($key, $after)) {
+            if ($before[$key] == $after[$key]) {
+                $status = "same";
+            } elseif ($before[$key] != $after[$key]) {
+                $status = "change";
+            }
         } elseif (!array_key_exists($key, $after)) {
-            array_push($differences, ['key' => $key, 'value' => $before[$key], 'change' => '-']);
+            $status = "deleted";
+        } elseif (!array_key_exists($key, $before)) {
+            $status = "added";
         }
-    }
-    foreach ($after as $key => $value) {
-        if (!array_key_exists($key, $before)) {
-            array_push($differences, ['key' => $key, 'value' => $after[$key], 'change' => '+']);
-        }
-    }
-    return $differences;
+        return ['key' => $key, 'flag' => $status];
+    }, $keys);
+    return $statuses;
 }
 
 function standartizeYamlToJson($data)
 {
-    foreach ($data as $key => $value) {
-        $data[$key] = $value[FIRST_INDENTATION];
-    }
-    return $data;
-}
-
-function stringifyResult($result)
-{
-    $string = "{\n";
-    foreach ($result as $key => $value) {
-        if (is_bool($value['value'])) {
-            $value['value'] = $value['value'] == true ? 'true' : 'false';
-        }
-        $string = $string . "  " . $value['change'] . " " . $value['key'] . ": " . $value['value'] . ",\n";
-    }
-    $noLastComma = substr($string, 0, LAST_COMMA);
-    $finalString = "{$noLastComma}\n}\n";
-    return $finalString;
+    return $mapped = array_map(function ($value) {
+        return $value[FIRST_INDENTATION];
+    }, $data);
 }
