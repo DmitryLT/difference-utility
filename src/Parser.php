@@ -3,6 +3,7 @@
 namespace Differ\Parser;
 use Symfony\Component\Yaml\Yaml;
 use function \Funct\Collection\union;
+use function \Funct\Collection\flatten;
 
 const LAST_COMMA = -2;
 const FIRST_INDENTATION = 0;
@@ -23,49 +24,56 @@ function getType($pathToFile)
 
 function findDiffs($before, $after)
 {
-    $statuses = findFlags($before, $after);
-    $reduced = array_reduce($statuses, function ($acc, $status) use ($before, $after) {
-        if (array_key_exists($status['key'], $before)) {
-            if (is_bool($before[$status['key']])) {
-                $before[$status['key']] = $before[$status['key']] == true ? 'true' : 'false';
-            }
+    $statuses = findNodeTypes($before, $after);
+    $mapped = array_map(function ($status) use ($before, $after) {
+        [$key, $valueBefore, $valueAfter, $type] = $status;
+        if ($type == "same") {
+            return "    {$key}: {$valueBefore}";
+        } elseif ($type == "change") {
+            return ["  - {$key}: {$valueBefore}", "  + {$key}: {$valueAfter}"];
+        } elseif ($type == "deleted") {
+            return "  - {$key}: {$valueBefore}";
+        } elseif ($type == "added") {
+            return "  + {$key}: {$valueAfter}";
         }
-        if (array_key_exists($status['key'], $after)) {
-            if (is_bool($after[$status['key']])) {
-                $after[$status['key']] = $after[$status['key']] == true ? 'true' : 'false';
-            }
-        }
-        if ($status['flag'] == "same") {
-            $string = "  " . "  " . $status['key'] . ": " . $before[$status['key']] . "\n";
-        } elseif ($status['flag'] == "change") {
-            $string = "  " . "- " . $status['key'] . ": " . $before[$status['key']] . "\n" .
-                      "  " . "+ " . $status['key'] . ": " . $after[$status['key']] . "\n";
-        } elseif ($status['flag'] == "deleted") {
-            $string = "  " . "- " . $status['key'] . ": " . $before[$status['key']] . "\n";
-        } elseif ($status['flag'] == "added") {
-            $string = "  " . "+ " . $status['key'] . ": " . $after[$status['key']] . "\n";
-        }
-            return $acc . $string;
-    }, "");
-    return "{\n" . $reduced . "}\n";
+    }, $statuses);
+    $fullString = implode("\n", flatten($mapped));
+    return "{\n{$fullString}\n}\n";
 }
 
-function findFlags($before, $after)
+function stringify($value)
+{
+    if (is_bool($value)) {
+        $value = $value == true ? 'true' : 'false';
+        return $value;
+    }
+    return $value;
+}
+
+function findNodeTypes($before, $after)
 {
     $keys = union(array_keys($before), array_keys($after));
     $statuses = array_map(function ($key) use ($before, $after) {
         if (array_key_exists($key, $before) && array_key_exists($key, $after)) {
             if ($before[$key] == $after[$key]) {
-                $status = "same";
+                $type = "same";
+                $beforeValue = stringify($before[$key]);
+                $afterValue = stringify($after[$key]);
             } elseif ($before[$key] != $after[$key]) {
-                $status = "change";
+                $type = "change";
+                $beforeValue = stringify($before[$key]);
+                $afterValue = stringify($after[$key]);
             }
         } elseif (!array_key_exists($key, $after)) {
-            $status = "deleted";
+            $type = "deleted";
+            $beforeValue = stringify($before[$key]);
+            $afterValue = "";
         } elseif (!array_key_exists($key, $before)) {
-            $status = "added";
+            $type = "added";
+            $beforeValue = "";
+            $afterValue = stringify($after[$key]);
         }
-        return ['key' => $key, 'flag' => $status];
+        return [$key, $beforeValue, $afterValue, $type];
     }, $keys);
     return $statuses;
 }
