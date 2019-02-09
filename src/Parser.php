@@ -54,24 +54,18 @@ function findNodeTypes($before, $after)
 {
     $keys = union(array_keys($before), array_keys($after));
     $statuses = array_map(function ($key) use ($before, $after) {
+        $beforeValue = isset($before[$key]) ? stringify($before[$key]) : '';
+        $afterValue = isset($after[$key]) ? stringify($after[$key]) : '';
         if (array_key_exists($key, $before) && array_key_exists($key, $after)) {
             if ($before[$key] == $after[$key]) {
                 $type = "same";
-                $beforeValue = stringify($before[$key]);
-                $afterValue = stringify($after[$key]);
             } elseif ($before[$key] != $after[$key]) {
                 $type = "change";
-                $beforeValue = stringify($before[$key]);
-                $afterValue = stringify($after[$key]);
             }
         } elseif (!array_key_exists($key, $after)) {
             $type = "deleted";
-            $beforeValue = stringify($before[$key]);
-            $afterValue = "";
         } elseif (!array_key_exists($key, $before)) {
             $type = "added";
-            $beforeValue = "";
-            $afterValue = stringify($after[$key]);
         }
         return [$key, $beforeValue, $afterValue, $type];
     }, $keys);
