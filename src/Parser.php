@@ -1,10 +1,9 @@
 <?php
-
 namespace Differ\Parser;
+
 use Symfony\Component\Yaml\Yaml;
 use function \Funct\Collection\union;
 use function \Funct\Collection\flatten;
-
 const LAST_COMMA = -2;
 const FIRST_INDENTATION = 0;
 
@@ -26,15 +25,16 @@ function findDiffs($before, $after)
 {
     $statuses = findNodeTypes($before, $after);
     $mapped = array_map(function ($status) use ($before, $after) {
-        [$key, $valueBefore, $valueAfter, $type] = $status;
-        if ($type == "same") {
-            return "    {$key}: {$valueBefore}";
-        } elseif ($type == "change") {
-            return ["  - {$key}: {$valueBefore}", "  + {$key}: {$valueAfter}"];
-        } elseif ($type == "deleted") {
-            return "  - {$key}: {$valueBefore}";
-        } elseif ($type == "added") {
-            return "  + {$key}: {$valueAfter}";
+        switch ($status["type"]) {
+            case "same":
+                return "    {$status["key"]}: {$status["beforeValue"]}";
+            case "change":
+                return ["  - {$status["key"]}: {$status["beforeValue"]}",
+                        "  + {$status["key"]}: {$status["afterValue"]}"];
+            case "deleted":
+                return "  - {$status["key"]}: {$status["beforeValue"]}";
+            case "added":
+                return "  + {$status["key"]}: {$status["afterValue"]}";
         }
     }, $statuses);
     $fullString = implode("\n", flatten($mapped));
@@ -67,7 +67,10 @@ function findNodeTypes($before, $after)
         } elseif (!array_key_exists($key, $before)) {
             $type = "added";
         }
-        return [$key, $beforeValue, $afterValue, $type];
+        return ["key" => $key,
+                "beforeValue" => $beforeValue,
+                "afterValue" => $afterValue,
+                "type" => $type];
     }, $keys);
     return $statuses;
 }
