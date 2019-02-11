@@ -5,3 +5,5 @@
 * 1st step: https://asciinema.org/a/xu98J9goTl5fFGKgAWmjOuQp9
 
 * 2nd and 3rd step: https://asciinema.org/a/eZWrcL6S86O9WXfiqjhPjVRDY
+
+* 4th step: https://asciinema.org/a/YHp0yczsXnzJh1whnEpvGA63l
