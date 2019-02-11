@@ -1,11 +1,15 @@
 <?php
+
 namespace Differ\Parser;
 
 use Symfony\Component\Yaml\Yaml;
 use function \Funct\Collection\union;
 use function \Funct\Collection\flatten;
+use function \Funct\Collection\flattenAll;
+
 const LAST_COMMA = -2;
 const FIRST_INDENTATION = 0;
+const FIRST_SPACES = 4;
 
 function parse($data, $type)
 {
@@ -26,6 +30,10 @@ function findDiffs($before, $after)
     $statuses = findNodeTypes($before, $after);
     $mapped = array_map(function ($status) use ($before, $after) {
         switch ($status["type"]) {
+            case "childNodes":
+                return ["{$status["key"]}: ", array_map(function ($childNodes) use ($status) {
+                    return findDiffs($status["beforeValue"], $status["afterValue"]);
+                }, $status["childNodes"])];
             case "same":
                 return "    {$status["key"]}: {$status["beforeValue"]}";
             case "change":
@@ -41,43 +49,104 @@ function findDiffs($before, $after)
     return "{\n{$fullString}\n}\n";
 }
 
-function stringify($value)
+function recurStrings($nodes)
 {
-    if (is_bool($value)) {
-        $value = $value == true ? 'true' : 'false';
-        return $value;
+    $mapped = array_map(function ($node) {
+        return stringifyRec($node, 0);
+    }, $nodes);
+    $result = implode("\n", flattenAll($mapped));
+    return "{\n" . $result . "\n}";
+}
+
+function stringifyRec($node, $layer)
+{
+    ["type" => $type,
+    "key" => $key,
+    "beforeValue" => $before,
+    "afterValue" => $after,
+    "childNodes" => $childNodes] = $node;
+    $before = stringifyArray($before, $layer);
+    $after = stringifyArray($after, $layer);
+    switch ($type) {
+        case "childNodes":
+            return [getBeginning($layer) . "    {$key}: {", array_map(function ($childNode) use ($layer) {
+                return stringifyRec($childNode, $layer + 1);
+            }, $childNodes), getBeginning($layer) . "    }"];
+        case "same":
+            return getBeginning($layer) . "    {$key}: {$before}";
+        case "change":
+            return [getBeginning($layer) . "  - {$key}: {$before}",
+                    getBeginning($layer) . "  + {$key}: {$after}"];
+        case "deleted":
+            return getBeginning($layer) . "  - {$key}: {$before}";
+        case "added":
+            return getBeginning($layer) . "  + {$key}: {$after}";
+    }
+}
+
+function getBeginning($layer)
+{
+    return str_repeat(" ", FIRST_SPACES * $layer);
+}
+
+function stringifyArray($value, $layer)
+{
+    if (is_array($value)) {
+        $keys = array_keys($value);
+        $result = array_map(function ($key) use ($value, $layer) {
+            return ["\n" . getBeginning($layer + 1) . "    {$key}: " . stringifyArray($value[$key], $layer)];
+        }, $keys);
+        return implode("", array_merge(["{"], flattenAll($result), ["\n" . getBeginning($layer) . "    }"]));
     }
     return $value;
 }
 
-function findNodeTypes($before, $after)
+function stringifyBool($value)
+{
+    if (is_bool($value)) {
+        $result = $value == true ? 'true' : 'false';
+        return $result;
+    }
+    return $value;
+}
+
+function getNode($key, $beforeValue, $afterValue, $type, $childNodes)
+{
+    return ["key" => $key,
+            "beforeValue" => $beforeValue,
+            "afterValue" => $afterValue,
+            "type" => $type,
+            "childNodes" => $childNodes];
+}
+
+function findNodes($before, $after)
 {
     $keys = union(array_keys($before), array_keys($after));
-    $statuses = array_map(function ($key) use ($before, $after) {
-        $beforeValue = isset($before[$key]) ? stringify($before[$key]) : '';
-        $afterValue = isset($after[$key]) ? stringify($after[$key]) : '';
+    $nodes = array_map(function ($key) use ($before, $after) {
+        $beforeValue = isset($before[$key]) ? stringifyBool($before[$key]) : "";
+        $afterValue = isset($after[$key]) ? stringifyBool($after[$key]) : "";
         if (array_key_exists($key, $before) && array_key_exists($key, $after)) {
-            if ($before[$key] == $after[$key]) {
-                $type = "same";
-            } elseif ($before[$key] != $after[$key]) {
-                $type = "change";
+            if (is_array($beforeValue) && is_array($afterValue)) {
+                $node = getNode($key, $beforeValue, $afterValue, "childNodes", findNodes($beforeValue, $afterValue));
+            } elseif ($beforeValue == $afterValue) {
+                $node = getNode($key, $beforeValue, $afterValue, "same", "");
+            } elseif ($beforeValue != $afterValue) {
+                $node = getNode($key, $beforeValue, $afterValue, "change", "");
             }
-        } elseif (!array_key_exists($key, $after)) {
-            $type = "deleted";
+        } elseif (array_key_exists($key, $before) && !array_key_exists($key, $after)) {
+            $node = getNode($key, $beforeValue, "", "deleted", "");
         } elseif (!array_key_exists($key, $before)) {
-            $type = "added";
+            $node = getNode($key, "", $afterValue, "added", "");
         }
-        return ["key" => $key,
-                "beforeValue" => $beforeValue,
-                "afterValue" => $afterValue,
-                "type" => $type];
+        return $node;
     }, $keys);
-    return $statuses;
+    return $nodes;
 }
 
 function standartizeYamlToJson($data)
 {
-    return $mapped = array_map(function ($value) {
+    $mapped = array_map(function ($value) {
         return $value[FIRST_INDENTATION];
     }, $data);
+    return $mapped;
 }
