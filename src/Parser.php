@@ -25,30 +25,6 @@ function getType($pathToFile)
     return pathinfo($pathToFile, PATHINFO_EXTENSION);
 }
 
-function findDiffs($before, $after)
-{
-    $statuses = findNodeTypes($before, $after);
-    $mapped = array_map(function ($status) use ($before, $after) {
-        switch ($status["type"]) {
-            case "childNodes":
-                return ["{$status["key"]}: ", array_map(function ($childNodes) use ($status) {
-                    return findDiffs($status["beforeValue"], $status["afterValue"]);
-                }, $status["childNodes"])];
-            case "same":
-                return "    {$status["key"]}: {$status["beforeValue"]}";
-            case "change":
-                return ["  - {$status["key"]}: {$status["beforeValue"]}",
-                        "  + {$status["key"]}: {$status["afterValue"]}"];
-            case "deleted":
-                return "  - {$status["key"]}: {$status["beforeValue"]}";
-            case "added":
-                return "  + {$status["key"]}: {$status["afterValue"]}";
-        }
-    }, $statuses);
-    $fullString = implode("\n", flatten($mapped));
-    return "{\n{$fullString}\n}\n";
-}
-
 function recurStrings($nodes)
 {
     $mapped = array_map(function ($node) {
@@ -83,12 +59,13 @@ function stringifyRec($node, $layer)
             return getBeginning($layer) . "  + {$key}: {$after}";
     }
 }
-
+// get 4 spaces
 function getBeginning($layer)
 {
     return str_repeat(" ", FIRST_SPACES * $layer);
 }
 
+// displays how match spaces needed before the 'key: value' on current layer
 function stringifyArray($value, $layer)
 {
     if (is_array($value)) {
@@ -110,6 +87,7 @@ function stringifyBool($value)
     return $value;
 }
 
+// build one array with diffs info
 function getNode($key, $beforeValue, $afterValue, $type, $childNodes)
 {
     return ["key" => $key,
@@ -119,6 +97,7 @@ function getNode($key, $beforeValue, $afterValue, $type, $childNodes)
             "childNodes" => $childNodes];
 }
 
+// build array of arrays with diffs info
 function findNodes($before, $after)
 {
     $keys = union(array_keys($before), array_keys($after));
@@ -149,4 +128,29 @@ function standartizeYamlToJson($data)
         return $value[FIRST_INDENTATION];
     }, $data);
     return $mapped;
+}
+
+// old function for finding diffs in no nested data
+function findDiffs($before, $after)
+{
+    $statuses = findNodeTypes($before, $after);
+    $mapped = array_map(function ($status) use ($before, $after) {
+        switch ($status["type"]) {
+            case "childNodes":
+                return ["{$status["key"]}: ", array_map(function ($childNodes) use ($status) {
+                    return findDiffs($status["beforeValue"], $status["afterValue"]);
+                }, $status["childNodes"])];
+            case "same":
+                return "    {$status["key"]}: {$status["beforeValue"]}";
+            case "change":
+                return ["  - {$status["key"]}: {$status["beforeValue"]}",
+                        "  + {$status["key"]}: {$status["afterValue"]}"];
+            case "deleted":
+                return "  - {$status["key"]}: {$status["beforeValue"]}";
+            case "added":
+                return "  + {$status["key"]}: {$status["afterValue"]}";
+        }
+    }, $statuses);
+    $fullString = implode("\n", flatten($mapped));
+    return "{\n{$fullString}\n}\n";
 }

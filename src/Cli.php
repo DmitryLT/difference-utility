@@ -20,10 +20,10 @@ DOC;
 
 function run()
 {
-    $response = Docopt::handle(OPTIONS);
+    $response = Docopt::handle(OPTIONS); // using OPTIONS and docopt library we give the information how to interprete commands from cli
 
-    $fileBefore = $response->args["<firstFile>"];
-    $fileAfter = $response->args["<secondFile>"];
+    $fileBefore = $response->args["<firstFile>"]; // get the path to 1 file from cli to the variable as a string
+    $fileAfter = $response->args["<secondFile>"]; // get the path to 2 file from cli to the variable as a string
 
     echo getDiff($fileBefore, $fileAfter);
 }
