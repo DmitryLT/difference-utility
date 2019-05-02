@@ -7,16 +7,19 @@
 ## Getting started
 
 To install use composer:
+
 composer global require taggart/generate-differences
 
 ## Usage
 
 Usage:
     gendiff (-h|--help)
+
     gendiff [--format <fmt>] <firstFile> <secondFile>
 
 Options:
     -h --help           Show this screen
+
     --format <fmt>      Report format [default: pretty]
 
 ### links
